@@ -4,18 +4,17 @@
 #include "dog.h"
 using namespace std;
 
-void handle_case_5(Daycare daycares) {
-    Daycare new_daycare = daycares;
+void handle_case_5(const Daycare &daycares) {
+    Daycare new_daycare(daycares);
     new_daycare.print_all();
 }
 
 int main() {
     ifstream infile;
     string line;
+    Daycare daycare;
 
     while(true) {
-        dog menu;
-        Daycare daycare;
         int option = daycare.call_menu();
 
         switch(option){
@@ -38,6 +37,7 @@ int main() {
                 handle_case_5(daycare);
                 break;
             case 6:
+                daycare.save();
                 return false;
             default:
                 break;

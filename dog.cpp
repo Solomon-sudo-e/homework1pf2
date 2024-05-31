@@ -75,6 +75,7 @@ void dog::Print() {
     cout << "Breed: " << breed << endl;
     cout << "Size In Pounds: " << sizeInPounds << endl;
     cout << "Amount of Energy: " << amountOfEnergy << endl;
+    cout << endl;
 }
 
 Daycare::Daycare() {
@@ -91,6 +92,9 @@ Daycare::Daycare(dog new_Dog[]) {
 }
 
 Daycare::Daycare(const Daycare &daycare) {
+    cout << "Copy constuctor" << endl;
+
+
     for(int i = 0; i < MAX_DOGS; i++) {
         Dogs[i] = daycare.Dogs[i];
     }
@@ -117,8 +121,6 @@ void Daycare::add_dog() {
         if(Dogs[i].getName() == "none") {
             Dogs[i] = Dog;
             return;
-        } else {
-            cout << "There is no more room for extra dogs! Sorry!";
         }
     }
 }
@@ -157,14 +159,18 @@ void Daycare::remove_dog(string check_name) {
 
 void Daycare::compare_dogs(int energy) {
     cout << "Let me check if there is any dogs similar to this energy level!" << endl;
+    int energy_count = 0;
     for(int i = 0; i < MAX_DOGS; i++){
         if((Dogs[i].getAmountOfEnergy() == energy)
         || (Dogs[i].getAmountOfEnergy() == energy-1)
         || (Dogs[i].getAmountOfEnergy() == energy + 1)) {
             cout << Dogs[i].getName() << " has an energy level of: " << Dogs[i].getAmountOfEnergy() << endl;
-        } else {
-            cout << "There are no dogs of matching energy level yet, but more will probably enroll in daycare soon" << endl;
+            energy_count++;
         }
+    }
+    cout << endl;
+    if(energy_count == 0) {
+        cout << "There are no dogs of matching energy level yet, but more will probably enroll in daycare soon" << endl;
     }
 }
 
@@ -175,7 +181,7 @@ int Daycare::call_menu() {
     cout << "3) Find a dog with the same energy level." << endl;
     cout << "4) Show all dogs." << endl;
     cout << "5) Move the dogs into a new array." << endl;
-    cout << "6) Close menu." << endl;
+    cout << "6) Close menu and save daycare to a file." << endl;
     int option;
     cin >> option;
     if((option == 1) || (option == 2) || (option == 3) || (option == 4) || (option == 5) || (option == 6)) {
@@ -223,6 +229,24 @@ void Daycare::read_dogs() {
         i++;
         doggy.Print();
     }
-    Dogs;
+
     infile.close();
+}
+
+void Daycare::save() {
+    ofstream outfile("dogs.txt");
+    if(outfile.is_open()) {
+        for(int i = 0; i < MAX_DOGS; i++) {
+            if(Dogs[i].getName() == "none") {
+                return;
+            } else {
+                outfile << Dogs[i].getName() << ", ";
+                outfile << Dogs[i].getAge() << ", ";
+                outfile << Dogs[i].getBreed() << ", ";
+                outfile << Dogs[i].getSizeInPounds() << ", ";
+                outfile << Dogs[i].getAmountOfEnergy() << "\n";
+            }
+        }
+        outfile.close();
+    }
 }

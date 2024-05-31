@@ -26,7 +26,6 @@ public:
     void setSizeInPounds(double sizeInPounds);
     int getAmountOfEnergy();
     void setAmountOfEnergy(int amountOfEnergy);
-    void readDog();
     void Print();
 private:
     string name;
@@ -49,6 +48,7 @@ public:
     int call_menu();
     void print_all();
     void read_dogs();
+    void save();
 
 private:
     dog Dogs[MAX_DOGS];
