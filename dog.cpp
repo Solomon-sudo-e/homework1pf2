@@ -153,7 +153,7 @@ void Daycare::remove_dog(string check_name) {
         dog del_dog;
         Dogs[label[0]] = del_dog;
     } else {
-        cout << "There was no dog with that name";
+        cout << "There was no dog with that breed";
     }
 }
 
@@ -217,10 +217,6 @@ void Daycare::read_dogs() {
 
         dog doggy;
         doggy.setName(read_name);
-
-//        dog doggy(read_name, stod(read_age),
-//                  read_breed, stod(read_sizeInPounds),
-//                  stoi(read_amountOfEnergy));
         doggy.setAge(stod(read_age));
         doggy.setBreed(read_breed);
         doggy.setSizeInPounds(stod(read_sizeInPounds));
@@ -240,11 +236,19 @@ void Daycare::save() {
             if(Dogs[i].getName() == "none") {
                 return;
             } else {
-                outfile << Dogs[i].getName() << ", ";
-                outfile << Dogs[i].getAge() << ", ";
-                outfile << Dogs[i].getBreed() << ", ";
-                outfile << Dogs[i].getSizeInPounds() << ", ";
-                outfile << Dogs[i].getAmountOfEnergy() << "\n";
+                if(i==0) {
+                    outfile << Dogs[i].getName() << ",";
+                    outfile << Dogs[i].getAge() << ",";
+                    outfile << Dogs[i].getBreed() << ",";
+                    outfile << Dogs[i].getSizeInPounds() << ",";
+                    outfile << Dogs[i].getAmountOfEnergy();
+                } else {
+                    outfile << endl << Dogs[i].getName() << ",";
+                    outfile << Dogs[i].getAge() << ",";
+                    outfile << Dogs[i].getBreed() << ",";
+                    outfile << Dogs[i].getSizeInPounds() << ",";
+                    outfile << Dogs[i].getAmountOfEnergy();
+                }
             }
         }
         outfile.close();
