@@ -113,8 +113,14 @@ void Daycare::add_dog() {
     string new_name, new_breed;
     double new_age, new_sizeInPounds;
     int new_amountOfEnergy;
-    cin >> new_name >> new_age >> new_breed >> new_sizeInPounds >> new_amountOfEnergy;
-
+    try {
+        cin >> new_name >> new_age >> new_breed >> new_sizeInPounds >> new_amountOfEnergy;
+    }
+    catch(std::exception e) {
+        cout << "It seems that you entered a value that cannot be used. Please try again!";
+        add_dog();
+        throw e;
+    }
     dog Dog(new_name, new_age, new_breed, new_sizeInPounds, new_amountOfEnergy);
 
     for(int i = 0; i < MAX_DOGS; i++) {
@@ -162,7 +168,7 @@ void Daycare::compare_dogs(int energy) {
     int energy_count = 0;
     for(int i = 0; i < MAX_DOGS; i++){
         if((Dogs[i].getAmountOfEnergy() == energy)
-        || (Dogs[i].getAmountOfEnergy() == energy-1)
+        || (Dogs[i].getAmountOfEnergy() == energy - 1)
         || (Dogs[i].getAmountOfEnergy() == energy + 1)) {
             cout << Dogs[i].getName() << " has an energy level of: " << Dogs[i].getAmountOfEnergy() << endl;
             energy_count++;
@@ -184,7 +190,7 @@ int Daycare::call_menu() {
     cout << "6) Close menu and save daycare to a file." << endl;
     int option;
     cin >> option;
-    if((option == 1) || (option == 2) || (option == 3) || (option == 4) || (option == 5) || (option == 6)) {
+    if(option >= 1 && option <= 6) {
         return option;
     } else
         call_menu();
@@ -215,17 +221,23 @@ void Daycare::read_dogs() {
         getline(infile, read_sizeInPounds, ',');
         getline(infile, read_amountOfEnergy, '\n');
 
-        dog doggy;
-        doggy.setName(read_name);
-        doggy.setAge(stod(read_age));
-        doggy.setBreed(read_breed);
-        doggy.setSizeInPounds(stod(read_sizeInPounds));
-        doggy.setAmountOfEnergy(stoi(read_amountOfEnergy));
-        Dogs[i] = doggy;
-        i++;
-        doggy.Print();
-    }
+        try {
+            dog doggy;
+            doggy.setName(read_name);
+            doggy.setAge(stod(read_age));
+            doggy.setBreed(read_breed);
+            doggy.setSizeInPounds(stod(read_sizeInPounds));
+            doggy.setAmountOfEnergy(stoi(read_amountOfEnergy));
+            Dogs[i] = doggy;
+            i++;
+            doggy.Print();
+        }
+        catch(std::exception e) {
+            cout << "It seems there may have been a error in the file. We apologize for the inconvenience!";
+            throw e;
+        }
 
+    }
     infile.close();
 }
 
@@ -233,23 +245,32 @@ void Daycare::save() {
     ofstream outfile("dogs.txt");
     if(outfile.is_open()) {
         for(int i = 0; i < MAX_DOGS; i++) {
-            if(Dogs[i].getName() == "none") {
-                return;
-            } else {
-                if(i==0) {
-                    outfile << Dogs[i].getName() << ",";
-                    outfile << Dogs[i].getAge() << ",";
-                    outfile << Dogs[i].getBreed() << ",";
-                    outfile << Dogs[i].getSizeInPounds() << ",";
-                    outfile << Dogs[i].getAmountOfEnergy();
+            try{
+                if(Dogs[i].getName() == "none") {
+                    return;
                 } else {
-                    outfile << endl << Dogs[i].getName() << ",";
-                    outfile << Dogs[i].getAge() << ",";
-                    outfile << Dogs[i].getBreed() << ",";
-                    outfile << Dogs[i].getSizeInPounds() << ",";
-                    outfile << Dogs[i].getAmountOfEnergy();
+                    if(i==0) {
+                        outfile << Dogs[i].getName() << ",";
+                        outfile << Dogs[i].getAge() << ",";
+                        outfile << Dogs[i].getBreed() << ",";
+                        outfile << Dogs[i].getSizeInPounds() << ",";
+                        outfile << Dogs[i].getAmountOfEnergy();
+                    } else {
+                        outfile << endl << Dogs[i].getName() << ",";
+                        outfile << Dogs[i].getAge() << ",";
+                        outfile << Dogs[i].getBreed() << ",";
+                        outfile << Dogs[i].getSizeInPounds() << ",";
+                        outfile << Dogs[i].getAmountOfEnergy();
+                    }
                 }
             }
+            catch(std::exception e) {
+                cout << "Failed to save: " << Dogs[i].getName() << endl;
+                cout << "Attempting to resume saving with: " << Dogs[i+1].getName() << endl;
+                i++;
+                throw e;
+            }
+
         }
         outfile.close();
     }
