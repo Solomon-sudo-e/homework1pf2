@@ -21,12 +21,13 @@ public:
     ~HashTable();
 
     // Methods
-    bool Insert(node *dog);
-    bool Search(string key, int &value);
-    bool Delete(string key);
+    bool Insert(Node *dog);
+    bool Search(string breed, string &name);
+    bool Delete(string breed, string name);
     void Print();
     void Print(ofstream & dout);
     void print_collision();
+    void read_file();
 
 private:
     // Private methods

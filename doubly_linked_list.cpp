@@ -3,7 +3,7 @@
 //
 
 #include "doubly_linked_list.h"
-doubly_linked_list::doubly_linked_list(): head(nullptr) {}
+doubly_linked_list::doubly_linked_list(): head(nullptr), tail(nullptr) {}
 
 doubly_linked_list::doubly_linked_list(const doubly_linked_list &copy_list) {
     head = copyNodes(copy_list.head);
@@ -11,20 +11,41 @@ doubly_linked_list::doubly_linked_list(const doubly_linked_list &copy_list) {
 
 doubly_linked_list::~doubly_linked_list() {
     while(head) {
-        node *temp = head;
+        Node *temp = head;
         head = head->getNext();
         delete temp;
     }
 }
 
-node* doubly_linked_list::copyNodes(node *copied_node) {
-    if(!node) return nullptr;
-    node *copiedNode = new node(
+bool doubly_linked_list::isEmpty() {
+    return head == nullptr;
+}
+
+Node* doubly_linked_list::getHead() {
+    return head;
+}
+
+void doubly_linked_list::setHead(Node* head_node) {
+    head = head_node;
+}
+
+Node* doubly_linked_list::copyNodes(Node *copied_node) {
+    if(!copied_node) return nullptr;
+    Node *copiedNode = new Node(
             copied_node->getName(), copied_node->getAge(),
             copied_node->getBreed(), copied_node->getSize(),
             copied_node->getEnergy());
     copiedNode->setNext(copyNodes(copied_node->getNext()));
     return copied_node;
+}
+
+void doubly_linked_list::printList() {
+    Node* current = head;
+    while(current) {
+        cout << current->getName() << ": " << current->getBreed() << " -> ";
+        current = current->getNext();
+    }
+    cout << "nullptr" << endl;
 }
 
 int evaluate_score(string name) {
@@ -41,72 +62,99 @@ int evaluate_score(string name) {
         }
     }
     cout << "Failed to find score" << endl;
+    return -1;
 }
 
-void doubly_linked_list::insertSorted(node *sort_node) {
-    //Getting scores. Lower the score the more priority the node gets.
+void doubly_linked_list::insertSorted(Node *sort_node) {
+    //Base case: if node is null return
+    if (!sort_node) return;
+
+    // Getting scores. Lower the score the more priority the Node gets.
     int score = evaluate_score(sort_node->getName());
-    int head_score = evaluate_score(head->getName());
 
-    //Iterate through and check scores.
-    while(score >= head_score) {
-        //Instantiating variables and reupdating each one for each new comparison needed.
-        int name_size = (sort_node->getName().size());
-        int head_name_size = (head->getName().size());
+    if (!head) {
+        // If the list is empty I set the new Node as head and tail
+        head = tail = sort_node;
+        return;
+    }
 
-        //strings for udpated names, in the case two are equal scores and I need to check next character/
-        string name_update = sort_node->getName();
-        string head_name_update = head->getName();
+    Node* current = head;
+    int current_score = evaluate_score(current->getName());
 
-        //Setting minimum for iterating through each character.
-        int min = 0;
-        if(name_size >= head_name_size) {
-            min = head_name_size;
+    // Iterate through and check scores
+    while (current && score >= current_score) {
+        if (score > current_score) {
+            current = current->getNext();
+            if (current) {
+                current_score = evaluate_score(current->getName());
+            }
         } else {
-            min = name_size;
-        }
+            // Handle score equality by comparing each character after IF prior characters were equal.
+            string name_update = sort_node->getName();
+            string current_name_update = current->getName();
 
-        //Go to next node to compare if score is too high.
-        if(score > head_score) {
-            head = head->getNext();
-            head_score = evaluate_score(head->getName());
+            //Function to get the minimum, using for clear code as I used a 5 line if else statement last time.
+            int min_len = min(name_update.size(), current_name_update.size());
+            bool exact_match = true;
 
-        /*
-         * Iterate through each character in order to find the lower priority and move forward. If exact matches,
-         * head_score will add 1 to break while loop and will insert beside eachother.
-         */
-        } else if(score == head_score) {
-            while(score == head_score) {
-                if(min > 1) {
-                    for(int i = 1; i<min; i++) {
-                        name_update[i-1] = name_update[i];
-                        head_name_update[i-1] = head_name_update[i];
-                    }
-                    min = min - 1;
+            //Iterating through new strings to comapre each name after removing first character.
+            for (int i = 1; i < min_len; ++i) {
+                char score_char = toupper(name_update[i]);
+                char current_score_char = toupper(current_name_update[i]);
 
-                    score = evaluate_score(name_update);
-                    head_score = evaluate_score(head_name_update);
-                } else {
-                    head_score += 1;
+                if (score_char != current_score_char) {
+                    score = evaluate_score(name_update.substr(i));
+                    current_score = evaluate_score(current_name_update.substr(i));
+                    exact_match = false;
+                    break;
+                }
+            }
+            // Make sure we break the tie and move forward
+            if (exact_match) {
+                score++;
+            } else {
+                if (score > current_score) {
+                    current = current->getNext();
+                    if (current) current_score = evaluate_score(current->getName());
                 }
             }
         }
     }
-    sort_node->setPrevious(head);
-    sort_node->setNext(head->getNext());
-    head->setNext(sort_node);
-    sort_node->getNext()->setPrevious(sort_node);
+
+    // Insert the Node, since im using a doubly linked list I have to keep track of tail and head
+    if (!current) {
+        // Insert at the tail, !current means nullptr.
+        tail->setNext(sort_node);
+        sort_node->setPrevious(tail);
+        tail = sort_node;
+    } else if (current == head) {
+        // Insert at the head, best case scenario
+        sort_node->setNext(head);
+        head->setPrevious(sort_node);
+        head = sort_node;
+    } else {
+        // Insert in the middle.
+        Node* prev = current->getPrevious();
+        prev->setNext(sort_node);
+        sort_node->setPrevious(prev);
+        sort_node->setNext(current);
+        current->setPrevious(sort_node);
+    }
 }
 
-bool doubly_linked_list::remove(const string &name, const string &breed) {
-    node *temp = head;
-    while(temp != nullptr) {
-        if(temp->getName() != name || temp->getBreed() != breed) {
-            temp = temp->getNext();
+void doubly_linked_list::deleteNode(Node* node) {
+    if(node == head) {
+        head = head->getNext();
+        if(head) {
+            head->setPrevious(nullptr);
+        } else if(node == tail) {
+            tail = tail->getPrevious();
+            if(tail) {
+                tail->setNext(nullptr);
+            }
         } else {
-            temp->getPrevious()->setNext(temp->getNext());
-            temp->getNext()->setPrevious(temp->getPrevious());
-            delete temp;
+            node->getPrevious()->setNext(node->getNext());
+            node->getNext()->setPrevious(node->getPrevious());
         }
     }
 }

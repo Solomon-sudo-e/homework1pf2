@@ -35,8 +35,8 @@ HashTable::~HashTable()
     while(i < Size) {
         doubly_linked_list temp = table[i];
         while(temp.getHead() != nullptr) {
-            node *head = temp.getHead();
-            node *temporary = head;
+            Node *head = temp.getHead();
+            Node *temporary = head;
             temp.setHead(head->getNext());
             delete temporary;
         }
@@ -47,7 +47,7 @@ HashTable::~HashTable()
 //-----------------------------------------------------------
 // Insert method
 //-----------------------------------------------------------
-bool HashTable::Insert(node *dog)
+bool HashTable::Insert(Node *dog)
 {
     // Find desired key
     int index = Hash(dog->getBreed());
@@ -62,35 +62,41 @@ bool HashTable::Insert(node *dog)
 //-----------------------------------------------------------
 // Search method
 //-----------------------------------------------------------
-bool HashTable::Search(string key, int &value)
+bool HashTable::Search(string breed, string &name)
 {
     // Find desired key
-    int index = Hash(key);
-    while ((Key[index] != key) && (Key[index] != EMPTY))
-        index = Hash2(index);
-
-    // Return value from hash table
-    if (Key[index] == key)
-        value = Value[index];
-    return (Key[index] == key);
+    int index = Hash(breed);
+    Node* node = table[index].getHead();
+    while(node != nullptr) {
+        if(node->getBreed() == breed) {
+            name = node->getName();
+            return true;
+        }
+        node = node->getNext();
+    }
+    return false;
 }
 
 //-----------------------------------------------------------
 // Delete method
 //-----------------------------------------------------------
-bool HashTable::Delete(string key)
+bool HashTable::Delete(string breed, string name)
 {
     // Find desired key
-    int index = Hash(key);
-    while ((Key[index] != key) && (Key[index] != EMPTY))
-        index = Hash2(index);
+    int index = Hash(breed);
+    Node* node = table[index].getHead();
 
-    // Delete value from hash table
-    if (Key[index] == key)
-    {
-        Value[index] = NONE;
-        Key[index] = DELETED;
-        return true;
+    while(node != nullptr) {
+        if(node->getBreed() == breed) {
+            if(node->getName() == name) {
+                table[index].deleteNode(node);
+                return true;
+            } else {
+                node = node->getNext();
+            }
+        } else {
+            node = node->getNext();
+        }
     }
     return false;
 }
@@ -109,10 +115,27 @@ int HashTable::Hash(string key)
 //-----------------------------------------------------------
 // Secondary hash function
 //-----------------------------------------------------------
-int HashTable::Hash2(int index)
+int HashTable::Hash2(string key)
 {
-    // cout << "collision\n";
-    return (index + 1) % Size;
+    unsigned long hash = 5381;
+    int c;
+    const char* str = key.c_str();
+
+    while ((c = *str++))
+        hash = ((hash << 5) + hash) + c; /* hash * 33 + c */
+
+    return hash % Size;
+}
+
+int HashTable::Hash3(string key) {
+    unsigned long hash = 0;
+    int c;
+    const char* str = key.c_str();
+
+    while ((c = *str++))
+        hash = c + (hash << 6) + (hash << 16) - hash;
+
+    return hash % Size;
 }
 
 //-----------------------------------------------------------
@@ -120,17 +143,43 @@ int HashTable::Hash2(int index)
 //-----------------------------------------------------------
 void HashTable::Print()
 {
-    for (int index = 0; index < Size; index++)
-        if (Value[index] > 0)
-            cout << Value[index] << "\t" << Key[index] << "\n";
+    for (int index = 0; index < Size; index++) {
+        if (!table[index].isEmpty()) {
+            table[index].printList();
+        }
+    }
 }
 
-//-----------------------------------------------------------
-// Print function for debugging
-//-----------------------------------------------------------
-void HashTable::Print(ofstream & dout)
-{
-    for (int index = 0; index < Size; index++)
-        if (Value[index] > 0)
-            dout << Value[index] << "\t" << Key[index] << "\n";
+void HashTable::print_collision() {
+    cout << "Number of collisions: " << collision_counter << endl;
+}
+
+void HashTable::read_file() {
+    ifstream infile;
+    infile.open("dogs.txt");
+    string line;
+    string read_name, read_age, read_breed, read_sizeInPounds, read_amountOfEnergy;
+    while(!infile.eof()) {
+        getline(infile, read_name, ',');
+        getline(infile, read_age, ',');
+        getline(infile, read_breed, ',');
+        getline(infile, read_sizeInPounds, ',');
+        getline(infile, read_amountOfEnergy, '\n');
+
+        try {
+            Node *node;
+            node->setName(read_name);
+            node->setAge(stod(read_age));
+            node->setBreed(read_breed);
+            node->setSize(stod(read_sizeInPounds));
+            node->setEnergy(stod(read_amountOfEnergy));
+            Insert(node);
+        }
+        catch(exception e) {
+            cout << "It seems there may have been a error in the file. We apologize for the inconvenience!";
+        }
+
+    }
+    infile.close();
+    Print();
 }
