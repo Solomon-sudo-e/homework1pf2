@@ -1,3 +1,0 @@
-C:/Users/Solomon's PC/CLionProjects/homework1pf2/cmake-build-debug/CMakeFiles/dogs.dir
-C:/Users/Solomon's PC/CLionProjects/homework1pf2/cmake-build-debug/CMakeFiles/edit_cache.dir
-C:/Users/Solomon's PC/CLionProjects/homework1pf2/cmake-build-debug/CMakeFiles/rebuild_cache.dir
